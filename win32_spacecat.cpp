@@ -8,6 +8,7 @@
 
 #include "win32_spacecat.h"
 #include "maths.cpp"
+#include "render.cpp"
 
 static int64_t g_perfCounterFreq;
 

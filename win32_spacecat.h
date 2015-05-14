@@ -13,11 +13,12 @@
 #include "GL\wglew.h"
 #include <stdint.h>
 
-#include "maths.h"
-
 typedef int32_t bool32_t;
 typedef float real32_t;
 typedef double real64_t;
+
+#include "maths.h"
+#include "render.h"
 
 struct PlatformFile
 {
