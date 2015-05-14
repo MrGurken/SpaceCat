@@ -22,8 +22,31 @@ struct Mesh
     int32_t size;
 };
 
-void MeshAddVertices( Mesh* mesh, Vertex* vertices, int nvertices,
-                      int* indices, int nindices );
+#define SHADER_MAX_UNIFORMS 10
+struct Shader
+{
+    GLuint program;
+    GLuint uniforms[SHADER_MAX_UNIFORMS];
+    int32_t nuniforms;
+    uint64_t lastWrites[3];
+};
+
+Vertex MakeVertex( Vec3 position, Vec3 normal, Vec2 uv );
+Vertex MakeVertex( Vec3 position, Vec2 uv = Vec2( 0.0f ) );
+
+void MeshAddVertices( Mesh* mesh, const Vertex* vertices, int nvertices,
+                      const GLuint* indices, int nindices );
+
+void MeshRender( Mesh* mesh, GLuint drawType = GL_TRIANGLES );
+
+bool32_t ShaderLoad( Shader* shader,
+                 const char* vertexSource,
+                 const char* geometrySource,
+                 const char* fragmentSource );
+
+GLuint ShaderLoad( const char* source, GLuint type );
+void ShaderUnload( Shader* shader );
+bool32_t ShaderGetUniform( Shader* shader, const char* uniform );
 
 #define RENDER_H
 #endif
