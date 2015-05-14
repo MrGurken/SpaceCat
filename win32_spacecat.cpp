@@ -7,10 +7,6 @@
    ======================================================================== */
 #include "win32_spacecat.h"
 
-typedef int32_t bool32_t;
-typedef float real32_t;
-typedef double real64_t;
-
 static int64_t g_perfCounterFreq;
 
 extern "C" uint64_t Win32GetPerformanceFrequency()
@@ -203,6 +199,45 @@ extern "C" void Win32FreeFile( PlatformFile* buffer )
     }
 
     buffer->size = 0;
+}
+
+extern "C" bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const char* fontname )
+{
+    bool32_t result = false;
+
+    if( font->size <= 0 )
+        font->size = 12;
+    if( font->weight < 0 )
+        font->weight = 0;
+
+    font->range = 255;
+    font->id = glGenLists( font->range );
+
+    HFONT newFont = CreateFont( font->size,
+                                0, 0, 0,
+                                font->weight,
+                                ( font->style & 1 ),
+                                ( font->style & 1 << 2 ),
+                                ( font->style & 1 << 3 ),
+                                ANSI_CHARSET,
+                                OUT_TT_PRECIS,
+                                CLIP_DEFAULT_PRECIS,
+                                ANTIALIASED_QUALITY,
+                                DEFAULT_PITCH | FF_DONTCARE,
+                                fontname );
+
+    if( newFont )
+    {
+        HFONT oldFont = (HFONT)SelectObject( deviceContext, newFont );
+        wglUseFontBitmaps( deviceContext, 0, font->range, font->id );
+
+        DeleteObject( newFont );
+        SelectObject( deviceContext, oldFont );
+
+        result = true;
+    }
+
+    return result;
 }
 
 extern "C" bool32_t Win32ProcessKeyboard( PlatformInput* input, MSG* message )
