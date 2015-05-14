@@ -9,7 +9,7 @@
 
 static int64_t g_perfCounterFreq;
 
-extern "C" uint64_t Win32GetPerformanceFrequency()
+uint64_t Win32GetPerformanceFrequency()
 {
     LARGE_INTEGER result;
     QueryPerformanceFrequency( &result );
@@ -17,20 +17,20 @@ extern "C" uint64_t Win32GetPerformanceFrequency()
     return g_perfCounterFreq;
 }
 
-extern "C" uint64_t Win32GetClock()
+uint64_t Win32GetClock()
 {
     LARGE_INTEGER result;
     QueryPerformanceCounter( &result );
     return result.QuadPart;
 }
 
-extern "C" real32_t Win32GetSecondsElapsed( uint64_t start, uint64_t end )
+real32_t Win32GetSecondsElapsed( uint64_t start, uint64_t end )
 {
     real32_t result = ((real32_t)( end - start ) / (real32_t)g_perfCounterFreq );
     return result;
 }
 
-extern "C" uint64_t Win32GetLastWriteTime( const char* filename )
+uint64_t Win32GetLastWriteTime( const char* filename )
 {
     uint64_t result = 0;
 
@@ -45,10 +45,8 @@ extern "C" uint64_t Win32GetLastWriteTime( const char* filename )
     return result;
 }
 
-extern "C" LRESULT CALLBACK Win32DefaultWindowProcedure( HWND windowHandle,
-                                                         UINT message,
-                                                         WPARAM w,
-                                                         LPARAM l )
+LRESULT CALLBACK Win32DefaultWindowProcedure( HWND windowHandle, UINT message,
+                                              WPARAM w, LPARAM l )
 {
     LRESULT result = 0;
 
@@ -66,7 +64,7 @@ extern "C" LRESULT CALLBACK Win32DefaultWindowProcedure( HWND windowHandle,
     return result;
 }
 
-extern "C" WNDCLASS Win32DefaultWindowClass( const char* className, HINSTANCE hInstance )
+WNDCLASS Win32DefaultWindowClass( const char* className, HINSTANCE hInstance )
 {
     WNDCLASS result = {};
     result.lpszClassName = className;
@@ -78,7 +76,7 @@ extern "C" WNDCLASS Win32DefaultWindowClass( const char* className, HINSTANCE hI
     return result;
 }
 
-extern "C" bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderContext )
+bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderContext )
 {
     bool32_t result = false;
 
@@ -113,7 +111,7 @@ extern "C" bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderCo
     return result;
 }
 
-extern "C" bool32_t Win32ReadFile( PlatformFile* buffer, const char* filename )
+bool32_t Win32ReadFile( PlatformFile* buffer, const char* filename )
 {
     bool32_t result = false;
     
@@ -161,7 +159,7 @@ extern "C" bool32_t Win32ReadFile( PlatformFile* buffer, const char* filename )
 }
 
 // NOTE: This functions only supports filesizes of up to 4gb since we're using a 32bit integer to denoted the size
-extern "C" bool32_t Win32WriteFile( const char* filename, void* content, int32_t size )
+bool32_t Win32WriteFile( const char* filename, void* content, int32_t size )
 {
     bool32_t result = false;
     
@@ -190,7 +188,7 @@ extern "C" bool32_t Win32WriteFile( const char* filename, void* content, int32_t
     return result;
 }
 
-extern "C" void Win32FreeFile( PlatformFile* buffer )
+void Win32FreeFile( PlatformFile* buffer )
 {
     if( buffer->content )
     {
@@ -201,7 +199,7 @@ extern "C" void Win32FreeFile( PlatformFile* buffer )
     buffer->size = 0;
 }
 
-extern "C" bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const char* fontname )
+bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const char* fontname )
 {
     bool32_t result = false;
 
@@ -240,7 +238,7 @@ extern "C" bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const 
     return result;
 }
 
-extern "C" bool32_t Win32ProcessKeyboard( PlatformInput* input, MSG* message )
+bool32_t Win32ProcessKeyboard( PlatformInput* input, MSG* message )
 {
     bool32_t result = false;
 
@@ -255,7 +253,7 @@ extern "C" bool32_t Win32ProcessKeyboard( PlatformInput* input, MSG* message )
     return result;
 }
 
-extern "C" bool32_t Win32ProcessMouse( PlatformInput* input, MSG* message )
+bool32_t Win32ProcessMouse( PlatformInput* input, MSG* message )
 {
     bool32_t result = false;
 
@@ -299,7 +297,7 @@ extern "C" bool32_t Win32ProcessMouse( PlatformInput* input, MSG* message )
     return result;
 }
 
-extern "C" bool32_t Win32ProcessInput( PlatformInput* input, MSG* message )
+bool32_t Win32ProcessInput( PlatformInput* input, MSG* message )
 {
     if( Win32ProcessKeyboard( input, message ) )
         return true;

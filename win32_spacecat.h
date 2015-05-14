@@ -51,38 +51,20 @@ struct PlatformInput
     int32_t prevWheel;
 };
 
-typedef WNDCLASS Win32DefaultWindowClass_t( const char*, HINSTANCE );
-typedef bool32_t Win32CreateRenderContext_t( HDC, HGLRC* );
-typedef bool32_t Win32ReadFile_t( PlatformFile*, const char* );
-typedef bool32_t Win32WriteFile_t( const char*, void*, int32_t );
-typedef void Win32FreeFile_t( PlatformFile* );
-typedef bool32_t Win32ReadFont_t( HDC, PlatformFont*, const char* );
-typedef uint64_t Win32GetPerformanceFrequency_t();
-typedef uint64_t Win32GetClock_t();
-typedef uint64_t Win32GetLastWriteTime_t( const char* );
-typedef real32_t Win32GetSecondsElapsed_t( uint64_t, uint64_t );
-typedef bool32_t Win32ProcessKeyboard_t( PlatformInput*, MSG* );
-typedef bool32_t Win32ProcessMouse_t( PlatformInput*, MSG* );
-typedef bool32_t Win32ProcessInput_t( PlatformInput*, MSG* );
-
-struct SpaceCatDLL
-{
-    HMODULE module;
-    WNDPROC Win32DefaultWindowProcedure;
-    Win32DefaultWindowClass_t* Win32DefaultWindowClass;
-    Win32CreateRenderContext_t* Win32CreateRenderContext;
-    Win32ReadFile_t* Win32ReadFile;
-    Win32WriteFile_t* Win32WriteFile;
-    Win32FreeFile_t* Win32FreeFile;
-    Win32ReadFont_t* Win32ReadFont;
-    Win32GetPerformanceFrequency_t* Win32GetPerformanceFrequency;
-    Win32GetClock_t* Win32GetClock;
-    Win32GetLastWriteTime_t* Win32GetLastWriteTime;
-    Win32GetSecondsElapsed_t* Win32GetSecondsElapsed;
-    Win32ProcessKeyboard_t* Win32ProcessKeyboard;
-    Win32ProcessMouse_t* Win32ProcessMouse;
-    Win32ProcessInput_t* Win32ProcessInput;
-};
+uint64_t Win32GetPerformanceFrequency();
+uint64_t Win32GetClock();
+real32_t Win32GetSecondsElapsed( uint64_t start, uint64_t end );
+uint64_t Win32GetLastWriteTime( const char* filename );
+LRESULT CALLBACK Win32DefaultWindowProcedure( HWND, UINT, WPARAM, LPARAM );
+WNDCLASS Win32DefaultWindowClass( const char* className, HINSTANCE hInstance );
+bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderContext );
+bool32_t Win32ReadFile( PlatformFile* buffer, const char* filename );
+bool32_t Win32WriteFile( const char* filename, void* content, int32_t size );
+void Win32FreeFile( PlatformFile* buffer );
+bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const char* fontname );
+bool32_t Win32ProcessKeyboard( PlatformInput* input, MSG* message );
+bool32_t Win32ProcessMouse( PlatformInput* input, MSG* message );
+bool32_t Win32ProcessInput( PlatformInput* input, MSG* message );
 
 #define WIN32_SPACECAT_H
 #endif
