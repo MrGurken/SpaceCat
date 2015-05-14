@@ -5,7 +5,9 @@
    $Creator: Tunder $
    $Notice: (C) Copyright 2014 by SpaceCat, Inc. All Rights Reserved. $
    ======================================================================== */
+
 #include "win32_spacecat.h"
+#include "maths.cpp"
 
 static int64_t g_perfCounterFreq;
 
@@ -264,9 +266,9 @@ bool32_t Win32ProcessMouse( PlatformInput* input, MSG* message )
             WORD x = GET_X_LPARAM( message->lParam );
             WORD y = GET_Y_LPARAM( message->lParam );
 
-            //Vec2 oldPos = input->mousePosition;
-            //input->mousePosition = Vec2( (real32_t)x, (real32_t)y );
-            //input->mouseDelta = input->mousePosition - oldPos;
+            Vec2 oldPos = input->mousePosition;
+            input->mousePosition = Vec2( (real32_t)x, (real32_t)y );
+            input->mouseDelta = input->mousePosition - oldPos;
 
             result = true;
         } break;

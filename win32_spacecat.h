@@ -13,6 +13,8 @@
 #include "GL\wglew.h"
 #include <stdint.h>
 
+#include "maths.h"
+
 typedef int32_t bool32_t;
 typedef float real32_t;
 typedef double real64_t;
@@ -45,8 +47,8 @@ struct PlatformInput
     uint8_t prevKeys[INPUT_MAX_KEYS];
     uint8_t buttons[INPUT_MAX_BUTTONS];
     uint8_t prevButtons[INPUT_MAX_BUTTONS];
-    //Vec2 mousePosition;
-    //Vec2 mouseDelta;
+    Vec2 mousePosition;
+    Vec2 mouseDelta;
     int32_t wheel;
     int32_t prevWheel;
 };
