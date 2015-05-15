@@ -10,15 +10,7 @@
 #include "maths.cpp"
 #include "render.cpp"
 
-static int64_t g_perfCounterFreq;
-
-uint64_t Win32GetPerformanceFrequency()
-{
-    LARGE_INTEGER result;
-    QueryPerformanceFrequency( &result );
-    g_perfCounterFreq = result.QuadPart;
-    return g_perfCounterFreq;
-}
+static uint64_t g_perfCounterFreq;
 
 uint64_t Win32GetClock()
 {
@@ -305,4 +297,134 @@ bool32_t Win32ProcessInput( PlatformInput* input, MSG* message )
     if( Win32ProcessKeyboard( input, message ) )
         return true;
     return Win32ProcessMouse( input, message );
+}
+
+void scDefaultRuntime( SpaceCat* runtime )
+{
+    runtime->windowX = runtime->windowY = 32;
+    runtime->windowWidth = 640;
+    runtime->windowHeight = 480;
+    
+    runtime->fps = 30;
+    runtime->UpdateFunction = 0;
+    runtime->RenderFunction = 0;
+}
+
+int scRun( SpaceCat* runtime )
+{
+    WNDCLASS windowClass = {};
+    windowClass.lpszClassName = runtime->windowClassName;
+    windowClass.lpfnWndProc = Win32DefaultWindowProcedure;
+    windowClass.hInstance = runtime->hInstance;
+    windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    windowClass.hCursor = LoadCursor( 0, IDC_ARROW );
+
+    if( RegisterClassA( &windowClass ) )
+    {
+        HWND windowHandle = CreateWindow( runtime->windowClassName,
+                                          runtime->title,
+                                          WS_OVERLAPPEDWINDOW,
+                                          runtime->windowX, runtime->windowY,
+                                          runtime->windowWidth, runtime->windowHeight,
+                                          0, 0, runtime->hInstance, 0 );
+
+        if( windowHandle )
+        {
+            HDC deviceContext = GetDC( windowHandle );
+            HGLRC renderContext = 0;
+            if( !Win32CreateRenderContext( deviceContext, &renderContext ) )
+            {
+                MessageBoxA( 0, "Failed to create render context.", "win32_spacecat.cpp", MB_OK );
+                return -1;
+            }
+
+            glewExperimental = GL_TRUE;
+            GLenum initWorked = glewInit();
+            if( initWorked != GLEW_OK )
+            {
+                MessageBoxA( 0, "Failed to initialize GLEW.", "win32_spacecat.cpp", MB_OK );
+                return -1;
+            }
+
+            ShowWindow( windowHandle, SW_SHOW );
+
+            PlatformInput input = {};
+            PlatformIO io;
+            io.GetClock = Win32GetClock;
+            io.GetSecondsElapsed = Win32GetSecondsElapsed;
+            io.GetLastWriteTime = Win32GetLastWriteTime;
+            io.ReadFile = Win32ReadFile;
+            io.WriteFile = Win32WriteFile;
+            io.FreeFile = Win32FreeFile;
+            io.ReadFont = Win32ReadFont;
+
+            LARGE_INTEGER freqRes;
+            QueryPerformanceFrequency( &freqRes );
+            g_perfCounterFreq = freqRes.QuadPart;
+
+            UINT desiredSchedulerMS = 1;
+            bool32_t sleepIsGranular = ( timeBeginPeriod( desiredSchedulerMS ) == TIMERR_NOERROR );
+
+            real32_t targetSecondsPerFrame = 1.0f / (real32_t)runtime->fps;
+            uint64_t lastCounter = Win32GetClock();
+            
+            bool32_t running = true;
+            while( running )
+            {
+                MSG message;
+                while( PeekMessage( &message, 0, 0, 0, PM_REMOVE ) )
+                {
+                    if( message.message == WM_QUIT )
+                    {
+                        running = false;
+                    }
+                    else
+                    {
+                        if( !Win32ProcessInput( &input, &message ) )
+                        {
+                            TranslateMessage( &message );
+                            DispatchMessage( &message );
+                        }
+                    }
+                }
+
+                if( !runtime->UpdateFunction( &io, &input ) )
+                    running = false;
+                runtime->RenderFunction();
+
+                uint64_t workCounter = Win32GetClock();
+                real32_t workSecondsElapsed = Win32GetSecondsElapsed( lastCounter, workCounter );
+
+                real32_t secondsElapsed = workSecondsElapsed;
+                while( secondsElapsed < targetSecondsPerFrame )
+                {
+                    if( sleepIsGranular )
+                    {
+                        DWORD sleepMS = (DWORD)( 1000.0f * ( targetSecondsPerFrame - secondsElapsed ) );
+
+                        if( sleepMS > 0 )
+                        {
+                            Sleep( sleepMS );
+                        }
+                    }
+
+                    // busy wait
+                    while( secondsElapsed < targetSecondsPerFrame )
+                    {
+                        secondsElapsed = Win32GetSecondsElapsed( lastCounter, Win32GetClock() );
+                    }
+                }
+
+                SwapBuffers( deviceContext );
+                lastCounter = Win32GetClock();
+            }
+        }
+    }
+    else
+    {
+        MessageBoxA( 0, "Failed to register window class.", "win32_spacecat.cpp", MB_OK );
+        return -1;
+    }
+
+    return 0;
 }
