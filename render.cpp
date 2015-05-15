@@ -6,6 +6,9 @@
    $Notice: (C) Copyright 2014 by SpaceCat, Inc. All Rights Reserved. $
    ======================================================================== */
 
+#include "render.h"
+#include "spacecat.h"
+
 Vertex MakeVertex( Vec3 position, Vec3 normal, Vec2 uv )
 {
     Vertex result = { position.x, position.y, position.z,
@@ -91,14 +94,18 @@ bool32_t ShaderLoad( Shader* shader,
             int len = 1024;
             glGetProgramInfoLog( shader->program, 1024, &len, buf );
 
+#ifdef WIN32
             MessageBoxA( 0, buf, "render.cpp", MB_OK );
+#endif
         }
         else
         {
+#ifdef WIN32
             shader->lastWrites[0] = Win32GetLastWriteTime( vertexSource );
             if( geometrySource )
                 shader->lastWrites[1] = Win32GetLastWriteTime( geometrySource );
             shader->lastWrites[2] = Win32GetLastWriteTime( fragmentSource );
+#endif
             result = true;
         }
     }
@@ -121,7 +128,11 @@ GLuint ShaderLoad( const char* source, GLuint type )
     if( shader )
     {
         PlatformFile file;
+#ifdef WIN32
         if( Win32ReadFile( &file, source ) )
+#else
+        if( false )
+#endif
         {
             const char* s = (const char*)file.content;
             glShaderSource( shader, 1, &s, 0 );
@@ -135,7 +146,9 @@ GLuint ShaderLoad( const char* source, GLuint type )
                 int len = 1024;
                 glGetShaderInfoLog( shader, 1024, &len, buf );
 
+#ifdef WIN32
                 MessageBoxA( 0, buf, "render.cpp", MB_OK );
+#endif
                 result = false;
             }
         }

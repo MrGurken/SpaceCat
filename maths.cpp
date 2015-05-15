@@ -6,7 +6,7 @@
    $Notice: (C) Copyright 2014 by SpaceCat, Inc. All Rights Reserved. $
    ======================================================================== */
 
-#include "math.h"
+#include "maths.h"
 
 // **************************************************************************************
 // ********************************** VEC2 **********************************************
@@ -65,99 +65,99 @@ float Vec2::Length() const { return sqrt( x*x + y*y ); }
 // ********************************** POINT *********************************************
 // **************************************************************************************
 
-Point::Point( int value ) : x( value ), y( value ) {}
-Point::Point( int _x, int _y ) : x( _x ), y( _y ) {}
-Point::Point( const Point& ref ) : x( ref.x ), y( ref.y ) {}
-Point::Point( const Vec2& ref ) : x( (int)ref.x ), y( (int)ref.y ) {}
-Point::~Point() {}
+Point2::Point2( int value ) : x( value ), y( value ) {}
+Point2::Point2( int _x, int _y ) : x( _x ), y( _y ) {}
+Point2::Point2( const Point2& ref ) : x( ref.x ), y( ref.y ) {}
+Point2::Point2( const Vec2& ref ) : x( (int)ref.x ), y( (int)ref.y ) {}
+Point2::~Point2() {}
 
-Point& Point::operator=( const Point& ref )
+Point2& Point2::operator=( const Point2& ref )
 {
     x = ref.x;
     y = ref.y;
     return *this;
 }
 
-bool Point::operator==( const Point& ref ) const
+bool Point2::operator==( const Point2& ref ) const
 {
     return ( x == ref.x && y == ref.y );
 }
 
-bool Point::operator!=( const Point& ref ) const
+bool Point2::operator!=( const Point2& ref ) const
 {
     return !operator==( ref );
 }
 
-Point& Point::operator+=( const Point& ref )
+Point2& Point2::operator+=( const Point2& ref )
 {
     x += ref.x;
     y += ref.y;
     return *this;
 }
 
-Point& Point::operator-=( const Point& ref )
+Point2& Point2::operator-=( const Point2& ref )
 {
     x -= ref.x;
     y -= ref.y;
     return *this;
 }
 
-Point& Point::operator*=( const Point& ref )
+Point2& Point2::operator*=( const Point2& ref )
 {
     x *= ref.x;
     y *= ref.y;
     return *this;
 }
 
-Point& Point::operator*=( int value )
+Point2& Point2::operator*=( int value )
 {
     x *= value;
     y *= value;
     return *this;
 }
 
-Point& Point::operator/=( const Point& ref )
+Point2& Point2::operator/=( const Point2& ref )
 {
     x /= ref.x;
     y /= ref.y;
     return *this;
 }
 
-Point& Point::operator/=( int value )
+Point2& Point2::operator/=( int value )
 {
     x /= value;
     y /= value;
     return *this;
 }
 
-Point Point::operator+( const Point& ref ) const
+Point2 Point2::operator+( const Point2& ref ) const
 {
-    return Point( x+ref.x, y+ref.y );
+    return Point2( x+ref.x, y+ref.y );
 }
 
-Point Point::operator-( const Point& ref ) const
+Point2 Point2::operator-( const Point2& ref ) const
 {
-    return Point( x-ref.x, y-ref.y );
+    return Point2( x-ref.x, y-ref.y );
 }
 
-Point Point::operator*( const Point& ref ) const
+Point2 Point2::operator*( const Point2& ref ) const
 {
-    return Point( x*ref.x, y*ref.y );
+    return Point2( x*ref.x, y*ref.y );
 }
 
-Point Point::operator*( int value ) const
+Point2 Point2::operator*( int value ) const
 {
-    return Point( x*value, y*value );
+    return Point2( x*value, y*value );
 }
 
-Point Point::operator/( const Point& ref ) const
+Point2 Point2::operator/( const Point2& ref ) const
 {
-    return Point( x/ref.x, y/ref.y );
+    return Point2( x/ref.x, y/ref.y );
 }
 
-Point Point::operator/( int value ) const
+Point2 Point2::operator/( int value ) const
 {
-    return Point( x/value, y/value );
+    return Point2( x/value, y/value );
 }
 
 // **************************************************************************************
@@ -249,7 +249,7 @@ Vec3& Vec3::Rotate( const Quat& rotation )
     return *this;
 }
 
-Vec3& Vec3::Abs() { x = abs( x ); y = abs( y ); z = abs( z ); return *this; }
+Vec3& Vec3::Abs() { x = fabs( x ); y = fabs( y ); z = fabs( z ); return *this; }
 Vec3& Vec3::Lerp( const Vec3& to, float factor ) { return operator+=( ( to - *this ) * factor ); }
 Vec3& Vec3::Set( float _x, float _y, float _z ) { x = _x; y = _y; z = _z; return *this; }
 
@@ -427,7 +427,7 @@ float Vec4::Min() const
 }
 Vec4& Vec4::Normalize() { return operator/=( Length() ); }
 
-Vec4& Vec4::Abs() { x = abs( x ); y = abs( y ); z = abs( z ); w = abs( w ); return *this; }
+Vec4& Vec4::Abs() { x = fabs( x ); y = fabs( y ); z = fabs( z ); w = fabs( w ); return *this; }
 Vec4& Vec4::Lerp( const Vec4& to, float factor ) { return operator+=( ( to - *this ) * factor ); }
 Vec4& Vec4::Set( float _x, float _y, float _z, float _w ) { x = _x; y = _y; z = _z; w = _w; return *this; }
 

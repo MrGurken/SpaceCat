@@ -55,31 +55,31 @@ struct Vec2
     float   x, y;
 };
 
-struct Point
+struct Point2
 {
-    Point( int value = 0 );
-    Point( int x, int y );
-    Point( const Vec2& ref );
-    Point( const Point& ref );
-    virtual ~Point();
+    Point2( int value = 0 );
+    Point2( int x, int y );
+    Point2( const Vec2& ref );
+    Point2( const Point2& ref );
+    virtual ~Point2();
 
-    Point& operator=( const Point& ref );
-    bool operator==( const Point& ref ) const;
-    bool operator!=( const Point& ref ) const;
+    Point2& operator=( const Point2& ref );
+    bool operator==( const Point2& ref ) const;
+    bool operator!=( const Point2& ref ) const;
     
-    Point& operator+=( const Point& ref );
-    Point& operator-=( const Point& ref );
-    Point& operator*=( const Point& ref );
-    Point& operator*=( int value );
-    Point& operator/=( const Point& ref );
-    Point& operator/=( int value );
+    Point2& operator+=( const Point2& ref );
+    Point2& operator-=( const Point2& ref );
+    Point2& operator*=( const Point2& ref );
+    Point2& operator*=( int value );
+    Point2& operator/=( const Point2& ref );
+    Point2& operator/=( int value );
     
-    Point operator+( const Point& ref ) const;
-    Point operator-( const Point& ref ) const;
-    Point operator*( const Point& ref ) const;
-    Point operator*( int value ) const;
-    Point operator/( const Point& ref ) const;
-    Point operator/( int value ) const;
+    Point2 operator+( const Point2& ref ) const;
+    Point2 operator-( const Point2& ref ) const;
+    Point2 operator*( const Point2& ref ) const;
+    Point2 operator*( int value ) const;
+    Point2 operator/( const Point2& ref ) const;
+    Point2 operator/( int value ) const;
 
     int x, y;
 };

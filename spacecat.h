@@ -68,7 +68,9 @@ FUNCTION_GET_LAST_WRITE_TIME( Win32GetLastWriteTime );
 FUNCTION_READ_FILE( Win32ReadFile );
 FUNCTION_WRITE_FILE( Win32WriteFile );
 FUNCTION_FREE_FILE( Win32FreeFile );
+#ifdef WIN32
 FUNCTION_READ_FONT( Win32ReadFont );
+#endif
 
 typedef FUNCTION_GET_CLOCK( GetClock_t );
 typedef FUNCTION_GET_SECONDS_ELAPSED( GetSecondsElapsed_t );
@@ -76,7 +78,9 @@ typedef FUNCTION_GET_LAST_WRITE_TIME( GetLastWriteTime_t );
 typedef FUNCTION_READ_FILE( ReadFile_t );
 typedef FUNCTION_WRITE_FILE( WriteFile_t );
 typedef FUNCTION_FREE_FILE( FreeFile_t );
+#ifdef WIN32
 typedef FUNCTION_READ_FONT( ReadFont_t );
+#endif
 
 struct PlatformIO
 {
@@ -86,7 +90,9 @@ struct PlatformIO
     ReadFile_t* ReadFile;
     WriteFile_t* WriteFile;
     FreeFile_t* FreeFile;
+#ifdef WIN32
     ReadFont_t* ReadFont;
+#endif
 };
 
 #define FUNCTION_UPDATE(name) bool32_t name( PlatformIO* io, PlatformInput* input )

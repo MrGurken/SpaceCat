@@ -7,6 +7,17 @@
    $Notice: (C) Copyright 2014 by SpaceCat, Inc. All Rights Reserved. $
    ======================================================================== */
 
+#include "maths.h"
+
+#if WIN32
+#else
+#include <OpenGL/gl3.h>
+#include <stdint.h>
+typedef float real32_t;
+typedef int32_t bool32_t;
+struct PlatformFile;
+#endif
+
 struct Vertex
 {
     real32_t x, y, z;          // position
