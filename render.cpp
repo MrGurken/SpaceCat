@@ -9,6 +9,59 @@
 #include "render.h"
 #include "spacecat.h"
 
+bool32_t TextureLoad( PlatformIO* io, Texture* texture, const char* filename )
+{
+    bool32_t result = false;
+    
+    PlatformFile file;
+    if( io->ReadFile( &file, filename ) )
+    {
+        Bitmap* header = (Bitmap*)file.content;
+        uint32_t* pixels = (uint32_t*)( (uint8_t*)file.content + header->bitmapOffset );
+
+        // flip rows
+        /*for( int row=0; row<header->height/2; row++ )
+        {
+            for( int col=0; col<header->width; col++ )
+            {
+                int upper = (row*header->height)+col;
+                int lower = ((header->height-1-row)*header->height)+col;
+
+                uint32_t temp = pixels[lower];
+                pixels[lower] = pixels[upper];
+                pixels[upper] = temp;
+            }
+            }*/
+
+        glGenTextures( 1, &texture->id );
+        glBindTexture( GL_TEXTURE_2D, texture->id );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, header->width, header->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels );
+
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        texture->width = header->width;
+        texture->height = header->height;
+        texture->lastWrite = io->GetLastWriteTime( filename );
+
+        io->FreeFile( &file );
+        result = true;
+    }
+
+    return result;
+}
+
+void TextureUnload( Texture* texture )
+{
+    if( texture->id )
+        glDeleteTextures( 1, &texture->id );
+
+    texture->id = 0;
+    texture->width = 0;
+    texture->height = 0;
+}
+
 Vertex MakeVertex( Vec3 position, Vec3 normal, Vec2 uv )
 {
     Vertex result = { position.x, position.y, position.z,
@@ -53,6 +106,25 @@ void MeshAddVertices( Mesh* mesh, const Vertex* vertices, int nvertices,
     mesh->size = nindices;
 }
 
+void MeshQuad( Mesh* mesh )
+{
+    static const Vertex vertices[] =
+    {
+        { 0.0f },
+        { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+        { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f }
+    };
+
+    static const GLuint indices[] =
+    {
+        0, 1, 2,
+        3, 0, 2
+    };
+
+    MeshAddVertices( mesh, vertices, 4, indices, 6 );
+}
+
 void MeshRender( Mesh* mesh, GLuint drawType )
 {
     glBindVertexArray( mesh->vao );
@@ -60,6 +132,17 @@ void MeshRender( Mesh* mesh, GLuint drawType )
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->ibo );
 
     glDrawElements( drawType, mesh->size, GL_UNSIGNED_INT, 0 );
+}
+
+void TextRender( PlatformFont* font, Vec2 position, const char* text, Point2 windowSize )
+{
+    // NOTE: By clamping to integer values we avoid blurryness caused by subpixel interpolation
+    real32_t x = ( position.x / ( windowSize.x * 0.5f ) ) - 1.0f;
+    real32_t y = ( ( position.y / ( windowSize.y * 0.5f ) ) - 1.0f ) * -1.0f;
+
+    glRasterPos2f( x, y );
+    glListBase( font->id );
+    glCallLists( strlen(text), GL_UNSIGNED_BYTE, text );
 }
 
 bool32_t ShaderLoad( Shader* shader,
@@ -178,6 +261,7 @@ bool32_t ShaderGetUniform( Shader* shader, const char* uniform )
     if( shader->nuniforms < SHADER_MAX_UNIFORMS )
     {
         shader->uniforms[shader->nuniforms++] = glGetUniformLocation( shader->program, uniform );
+        result = true;
     }
 
     return result;

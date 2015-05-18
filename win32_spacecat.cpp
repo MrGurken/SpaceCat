@@ -10,22 +10,23 @@
 #include "maths.cpp"
 #include "render.cpp"
 
+static HDC g_deviceContext;
 static uint64_t g_perfCounterFreq;
 
-uint64_t Win32GetClock()
+FUNCTION_GET_CLOCK( Win32GetClock )
 {
     LARGE_INTEGER result;
     QueryPerformanceCounter( &result );
     return result.QuadPart;
 }
 
-real32_t Win32GetSecondsElapsed( uint64_t start, uint64_t end )
+FUNCTION_GET_SECONDS_ELAPSED( Win32GetSecondsElapsed )
 {
     real32_t result = ((real32_t)( end - start ) / (real32_t)g_perfCounterFreq );
     return result;
 }
 
-uint64_t Win32GetLastWriteTime( const char* filename )
+FUNCTION_GET_LAST_WRITE_TIME( Win32GetLastWriteTime )
 {
     uint64_t result = 0;
 
@@ -59,19 +60,7 @@ LRESULT CALLBACK Win32DefaultWindowProcedure( HWND windowHandle, UINT message,
     return result;
 }
 
-WNDCLASS Win32DefaultWindowClass( const char* className, HINSTANCE hInstance )
-{
-    WNDCLASS result = {};
-    result.lpszClassName = className;
-    result.lpfnWndProc = Win32DefaultWindowProcedure;
-    result.hInstance = hInstance;
-    result.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    result.hCursor = LoadCursor( 0, IDC_ARROW );
-
-    return result;
-}
-
-bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderContext )
+bool32_t Win32CreateRenderContext( HGLRC* renderContext )
 {
     bool32_t result = false;
 
@@ -93,12 +82,12 @@ bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderContext )
         0, 0, 0, 0
     };
 
-    int compatibleFormat = ChoosePixelFormat( deviceContext, &pfd );
+    int compatibleFormat = ChoosePixelFormat( g_deviceContext, &pfd );
     if( compatibleFormat > 0 )
     {
-        SetPixelFormat( deviceContext, compatibleFormat, &pfd );
-        *renderContext = wglCreateContext( deviceContext );
-        wglMakeCurrent( deviceContext, *renderContext );
+        SetPixelFormat( g_deviceContext, compatibleFormat, &pfd );
+        *renderContext = wglCreateContext( g_deviceContext );
+        wglMakeCurrent( g_deviceContext, *renderContext );
 
         result = true;
     }
@@ -106,7 +95,7 @@ bool32_t Win32CreateRenderContext( HDC deviceContext, HGLRC* renderContext )
     return result;
 }
 
-bool32_t Win32ReadFile( PlatformFile* buffer, const char* filename )
+FUNCTION_READ_FILE( Win32ReadFile )
 {
     bool32_t result = false;
     
@@ -154,7 +143,7 @@ bool32_t Win32ReadFile( PlatformFile* buffer, const char* filename )
 }
 
 // NOTE: This functions only supports filesizes of up to 4gb since we're using a 32bit integer to denoted the size
-bool32_t Win32WriteFile( const char* filename, void* content, int32_t size )
+FUNCTION_WRITE_FILE( Win32WriteFile )
 {
     bool32_t result = false;
     
@@ -183,7 +172,7 @@ bool32_t Win32WriteFile( const char* filename, void* content, int32_t size )
     return result;
 }
 
-void Win32FreeFile( PlatformFile* buffer )
+FUNCTION_FREE_FILE( Win32FreeFile )
 {
     if( buffer->content )
     {
@@ -194,7 +183,7 @@ void Win32FreeFile( PlatformFile* buffer )
     buffer->size = 0;
 }
 
-bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const char* fontname )
+FUNCTION_READ_FONT( Win32ReadFont )
 {
     bool32_t result = false;
 
@@ -221,16 +210,24 @@ bool32_t Win32ReadFont( HDC deviceContext, PlatformFont* font, const char* fontn
 
     if( newFont )
     {
-        HFONT oldFont = (HFONT)SelectObject( deviceContext, newFont );
-        wglUseFontBitmaps( deviceContext, 0, font->range, font->id );
+        HFONT oldFont = (HFONT)SelectObject( g_deviceContext, newFont );
+        wglUseFontBitmaps( g_deviceContext, 0, font->range, font->id );
 
         DeleteObject( newFont );
-        SelectObject( deviceContext, oldFont );
+        SelectObject( g_deviceContext, oldFont );
 
         result = true;
     }
 
     return result;
+}
+
+FUNCTION_FREE_FONT( Win32FreeFont )
+{
+    if( font->id )
+        glDeleteLists( font->id, font->range );
+
+    font->size = font->weight = font->range = 0;
 }
 
 bool32_t Win32ProcessKeyboard( PlatformInput* input, MSG* message )
@@ -299,15 +296,69 @@ bool32_t Win32ProcessInput( PlatformInput* input, MSG* message )
     return Win32ProcessMouse( input, message );
 }
 
+bool32_t KeyDown( PlatformInput* input, uint8_t key )
+{
+    return input->keys[key];
+}
+
+bool32_t KeyUp( PlatformInput* input, uint8_t key )
+{
+    return !input->keys[key];
+}
+
+bool32_t KeyPressed( PlatformInput* input, uint8_t key )
+{
+    if( !input->keys[key] )
+        return false;
+    return !input->prevKeys[key];
+}
+
+bool32_t KeyReleased( PlatformInput* input, uint8_t key )
+{
+    if( input->keys[key] )
+        return false;
+    return input->prevKeys[key];
+}
+
+bool32_t ButtonDown( PlatformInput* input, uint8_t button )
+{
+    return input->buttons[button];
+}
+
+bool32_t ButtonUp( PlatformInput* input, uint8_t button )
+{
+    return !input->buttons[button];
+}
+
+bool32_t ButtonPressed( PlatformInput* input, uint8_t button )
+{
+    if( !input->buttons[button] )
+        return false;
+    return !input->prevButtons[button];
+}
+
+bool32_t ButtonReleased( PlatformInput* input, uint8_t button )
+{
+    if( input->buttons[button] )
+        return false;
+    return input->prevButtons[button];
+}
+
+FUNCTION_INIT( InitFunctionStub ) { return true; }
+FUNCTION_UPDATE( UpdateFunctionStub ) { return true; }
+FUNCTION_RENDER( RenderFunctionStub ) { }
+
 void scDefaultRuntime( SpaceCat* runtime )
 {
     runtime->windowX = runtime->windowY = 32;
     runtime->windowWidth = 640;
     runtime->windowHeight = 480;
-    
+
+    runtime->memory = MEGABYTES(4);
     runtime->fps = 30;
-    runtime->UpdateFunction = 0;
-    runtime->RenderFunction = 0;
+    runtime->InitFunction = InitFunctionStub;
+    runtime->UpdateFunction = UpdateFunctionStub;
+    runtime->RenderFunction = RenderFunctionStub;
 }
 
 int scRun( SpaceCat* runtime )
@@ -330,9 +381,9 @@ int scRun( SpaceCat* runtime )
 
         if( windowHandle )
         {
-            HDC deviceContext = GetDC( windowHandle );
+            g_deviceContext = GetDC( windowHandle );
             HGLRC renderContext = 0;
-            if( !Win32CreateRenderContext( deviceContext, &renderContext ) )
+            if( !Win32CreateRenderContext( &renderContext ) )
             {
                 MessageBoxA( 0, "Failed to create render context.", "win32_spacecat.cpp", MB_OK );
                 return -1;
@@ -348,7 +399,9 @@ int scRun( SpaceCat* runtime )
 
             ShowWindow( windowHandle, SW_SHOW );
 
+            // Setup platform variables
             PlatformInput input = {};
+            
             PlatformIO io;
             io.GetClock = Win32GetClock;
             io.GetSecondsElapsed = Win32GetSecondsElapsed;
@@ -357,6 +410,13 @@ int scRun( SpaceCat* runtime )
             io.WriteFile = Win32WriteFile;
             io.FreeFile = Win32FreeFile;
             io.ReadFont = Win32ReadFont;
+            
+            PlatformMemory memory = {};
+            memory.size = runtime->memory;
+            memory.pointer = VirtualAlloc( 0, memory.size, MEM_COMMIT, PAGE_READWRITE );
+
+            // Init runtime
+            bool32_t running = runtime->InitFunction( &memory, &io );
 
             LARGE_INTEGER freqRes;
             QueryPerformanceFrequency( &freqRes );
@@ -368,9 +428,11 @@ int scRun( SpaceCat* runtime )
             real32_t targetSecondsPerFrame = 1.0f / (real32_t)runtime->fps;
             uint64_t lastCounter = Win32GetClock();
             
-            bool32_t running = true;
             while( running )
             {
+                memcpy( input.prevKeys, input.keys, INPUT_MAX_KEYS );
+                memcpy( input.prevButtons, input.buttons, INPUT_MAX_BUTTONS );
+                
                 MSG message;
                 while( PeekMessage( &message, 0, 0, 0, PM_REMOVE ) )
                 {
@@ -388,9 +450,9 @@ int scRun( SpaceCat* runtime )
                     }
                 }
 
-                if( !runtime->UpdateFunction( &io, &input ) )
+                if( !runtime->UpdateFunction( &memory, &io, &input ) )
                     running = false;
-                runtime->RenderFunction();
+                runtime->RenderFunction( &memory );
 
                 uint64_t workCounter = Win32GetClock();
                 real32_t workSecondsElapsed = Win32GetSecondsElapsed( lastCounter, workCounter );
@@ -415,9 +477,11 @@ int scRun( SpaceCat* runtime )
                     }
                 }
 
-                SwapBuffers( deviceContext );
+                SwapBuffers( g_deviceContext );
                 lastCounter = Win32GetClock();
             }
+
+            VirtualFree( memory.pointer, 0, MEM_RELEASE );
         }
     }
     else

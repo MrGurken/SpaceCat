@@ -277,5 +277,46 @@ struct Quat
     float   x, y, z, w;
 };
 
+struct Rect
+{
+    Rect( float value = 0.0f );
+    Rect( float x, float y, float weight, float height );
+    Rect( const Rect& ref );
+    ~Rect();
+
+    Rect& operator=( const Rect& ref );
+    bool operator==( const Rect& ref );
+    bool operator!=( const Rect& ref );
+    Rect& operator+=( const Vec2& ref );
+    Rect& operator-=( const Vec2& ref );
+    Rect operator+( const Vec2& ref ) const;
+    Rect operator-( const Vec2& ref ) const;
+
+    void Left( float value );
+    void Right( float value );
+    void Top( float value );
+    void Bottom( float value );
+    void Center( const Vec2& value );
+    void TopLeft( const Vec2& value );
+    void TopRight( const Vec2& value );
+    void BottomLeft( const Vec2& value );
+    void BottomRight( const Vec2& value );
+
+    float Left() const;
+    float Right() const;
+    float Top() const;
+    float Bottom() const;
+    Vec2 Center() const;
+    Vec2 TopLeft() const;
+    Vec2 TopRight() const;
+    Vec2 BottomLeft() const;
+    Vec2 BottomRight() const;
+
+    bool Contains( const Vec2& point );
+    bool Intersect( const Rect& bounds );
+
+    float x, y, width, height;
+};
+
 #define MATH_H
 #endif

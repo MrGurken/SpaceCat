@@ -230,7 +230,15 @@ float Vec3::Min() const
         m = z;
     return m;
 }
-Vec3& Vec3::Normalize() { return operator/=( Length() ); }
+Vec3& Vec3::Normalize()
+{
+    float len = Length();
+    if( len < EPSILON )
+        x = y = z = 0.0f;
+    else
+        operator/=( len );
+    return *this;
+}
 
 Vec3& Vec3::Rotate( const Vec3& axis, float angle )
 {
@@ -857,3 +865,93 @@ Vec3 Quat::GetUp() const { return Vec3( 2.0f * ( x * y + w * z ), 1.0f - 2.0f * 
 Vec3 Quat::GetDown() const { return Vec3( -2.0f * ( x * y + w * z ), -( 1.0f - 2.0f * ( x * x + z * z ) ), -2.0f * ( y * z - w * x ) ); }
 Vec3 Quat::GetRight() const { return Vec3( 1.0f - 2.0f * ( y * y + z * z ), 2.0f * ( x * y - w * z ), 2.0f * ( x * z + w * y ) ); }
 Vec3 Quat::GetLeft() const { return Vec3( -( 1.0f - 2.0f * ( y * y + z * z ) ), -2.0f * ( x * y - w * z ), -2.0f * ( x * z + w * y ) ); }
+
+// **************************************************************************************
+// ********************************** RECT ***** ****************************************
+// **************************************************************************************
+
+Rect::Rect( float value ) : x( value ), y( value ), width( value ), height( value ) {}
+Rect::Rect( float _x, float _y, float _w, float _h ) : x(_x), y(_y), width(_w), height(_h) {}
+Rect::Rect( const Rect& ref ) : x(ref.x), y(ref.y), width(ref.width), height(ref.height) {}
+Rect::~Rect(){}
+
+Rect& Rect::operator=( const Rect& ref )
+{
+    x = ref.x;
+    y = ref.y;
+    width = ref.width;
+    height = ref.height;
+    return *this;
+}
+
+bool Rect::operator==( const Rect& ref )
+{
+    return ( FEQ( x, ref.x ) && FEQ( y, ref.y ) &&
+             FEQ( width, ref.width ) && FEQ( height, ref.height ) );
+}
+
+bool Rect::operator!=( const Rect& ref )
+{
+    return !operator==( ref );
+}
+
+Rect& Rect::operator+=( const Vec2& ref )
+{
+    x += ref.x;
+    y += ref.y;
+    return *this;
+}
+
+Rect& Rect::operator-=( const Vec2& ref )
+{
+    x -= ref.x;
+    y -= ref.y;
+    return *this;
+}
+
+Rect Rect::operator+( const Vec2& ref ) const
+{
+    return Rect( x+ref.x, y+ref.y, width, height );
+}
+
+Rect Rect::operator-( const Vec2& ref ) const
+{
+    return Rect( x-ref.x, y-ref.y, width, height );
+}
+
+void Rect::Left( float value ) { x = value; }
+void Rect::Right( float value ) { x = value - width; }
+void Rect::Top( float value ) { y = value; }
+void Rect::Bottom( float value ) { y = value - width; }
+void Rect::Center( const Vec2& ref ) { x = ref.x+width*0.5f; y = ref.y+height*0.5f; }
+void Rect::TopLeft( const Vec2& ref ) { Top( ref.y ); Left( ref.x ); }
+void Rect::TopRight( const Vec2& ref ) { Top( ref.y ); Right( ref.x ); }
+void Rect::BottomLeft( const Vec2& ref ) { Bottom( ref.y ); Left( ref.x ); }
+void Rect::BottomRight( const Vec2& ref ) { Bottom( ref.y ); Right( ref.x ); }
+
+float Rect::Left() const { return x; }
+float Rect::Right() const { return x + width; }
+float Rect::Top() const { return y; }
+float Rect::Bottom() const { return y + height; }
+Vec2 Rect::Center() const { return Vec2( x+width*0.5f, y+height*0.5f ); }
+Vec2 Rect::TopLeft() const { return Vec2( Left(), Top() ); }
+Vec2 Rect::TopRight() const { return Vec2( Right(), Top() ); }
+Vec2 Rect::BottomLeft() const { return Vec2( Left(), Bottom() ); }
+Vec2 Rect::BottomRight() const { return Vec2( Right(), Bottom() ); }
+
+bool Rect::Contains( const Vec2& point )
+{
+    return ( point.x >= Left() &&
+             point.x <= Right() &&
+             point.y >= Top() &&
+             point.y <= Bottom() );
+}
+
+bool Rect::Intersect( const Rect& bounds )
+{
+    if( bounds.Left() > Right() ) return false;
+    if( bounds.Right() < Left() ) return false;
+    if( bounds.Top() > Bottom() ) return false;
+    if( bounds.Bottom() < Top() ) return false;
+    return true;
+}
