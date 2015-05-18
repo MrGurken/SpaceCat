@@ -15,6 +15,8 @@
 #define ToRadians(d) ( d * ( 180.0f / PI ) )
 #define LERP(a,b,f) ((a)+((b)-(a))*(f))
 
+// TODO: Consider using a namespace so we don't collide with types already defined
+
 struct Vec2
 {
     Vec2( float value = 0.0f );
@@ -277,20 +279,20 @@ struct Quat
     float   x, y, z, w;
 };
 
-struct Rect
+struct Rect4
 {
-    Rect( float value = 0.0f );
-    Rect( float x, float y, float weight, float height );
-    Rect( const Rect& ref );
-    ~Rect();
+    Rect4( float value = 0.0f );
+    Rect4( float x, float y, float weight, float height );
+    Rect4( const Rect4& ref );
+    ~Rect4();
 
-    Rect& operator=( const Rect& ref );
-    bool operator==( const Rect& ref );
-    bool operator!=( const Rect& ref );
-    Rect& operator+=( const Vec2& ref );
-    Rect& operator-=( const Vec2& ref );
-    Rect operator+( const Vec2& ref ) const;
-    Rect operator-( const Vec2& ref ) const;
+    Rect4& operator=( const Rect4& ref );
+    bool operator==( const Rect4& ref );
+    bool operator!=( const Rect4& ref );
+    Rect4& operator+=( const Vec2& ref );
+    Rect4& operator-=( const Vec2& ref );
+    Rect4 operator+( const Vec2& ref ) const;
+    Rect4 operator-( const Vec2& ref ) const;
 
     void Left( float value );
     void Right( float value );
@@ -313,7 +315,7 @@ struct Rect
     Vec2 BottomRight() const;
 
     bool Contains( const Vec2& point );
-    bool Intersect( const Rect& bounds );
+    bool Intersect( const Rect4& bounds );
 
     float x, y, width, height;
 };

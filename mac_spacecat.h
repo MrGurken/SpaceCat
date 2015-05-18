@@ -9,6 +9,9 @@
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 {
     NSWindow* window;
+    PlatformIO io;
+    PlatformInput input;
+    PlatformMemory memory;
 }
 @end
 
