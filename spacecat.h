@@ -33,7 +33,7 @@ struct PlatformMemory
 struct PlatformFile
 {
     void* content;
-    int32_t size;
+    int32_t size; // TODO: Make uint32_t?
 };
 
 #define FONT_ITALIC 0x1
@@ -78,7 +78,7 @@ bool32_t ButtonReleased( PlatformInput* input, uint8_t button );
 #define FUNCTION_GET_SECONDS_ELAPSED(name) real32_t name( uint64_t start, uint64_t end )
 #define FUNCTION_GET_LAST_WRITE_TIME(name) uint64_t name( const char* filename )
 #define FUNCTION_READ_FILE(name) bool32_t name( PlatformFile* buffer, const char* filename )
-#define FUNCTION_WRITE_FILE(name) bool32_t name( const char* filename, void* content, int32_t size )
+#define FUNCTION_WRITE_FILE(name) bool32_t name( const char* filename,void* content, int32_t size )
 #define FUNCTION_FREE_FILE(name) void name( PlatformFile* buffer )
 #define FUNCTION_READ_FONT(name) bool32_t name( PlatformFont* font, const char* fontname )
 #define FUNCTION_FREE_FONT(name) void name( PlatformFont* font )

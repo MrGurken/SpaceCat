@@ -136,9 +136,8 @@ void MeshRender( Mesh* mesh, GLuint drawType )
 
 void TextRender( PlatformFont* font, Vec2 position, const char* text, Point2 windowSize )
 {
-    // NOTE: By clamping to integer values we avoid blurryness caused by subpixel interpolation
     real32_t x = ( position.x / ( windowSize.x * 0.5f ) ) - 1.0f;
-    real32_t y = ( ( position.y / ( windowSize.y * 0.5f ) ) - 1.0f ) * -1.0f;
+    real32_t y = ( ( ( position.y + font->size ) / ( windowSize.y * 0.5f ) ) - 1.0f ) * -1.0f;
 
     glRasterPos2f( x, y );
     glListBase( font->id );
